@@ -9,11 +9,21 @@ pygame = 2.1.0
 
 Box2D = 2.3.10
 
+pybullet = 3.2.6
+
+imageio = 2.35.1
+
+scikit-learn = 1.3.2 
+
+imageio = 0.13.2
+
+matplotlib = 3.7.5
+
  <h2>Execution Environment</h2>
 
-Intel(R) Xeon(R) E5-2650 v4 CPUs
+Intel(R) Xeon(R) E5-2650 v4 CPUs @ 2.20GHz, 32GB of RAM
 
-NVIDIA GeForce RTX 3090 GPUs running on CUDA 12.1
+6 NVIDIA GeForce RTX 3090 GPUs running on CUDA 11.7
 
 <h2>Visualization</h2>
 In each environment, the first column shows the animation of a normal agent, the second column shows a backdoor agent without executing the trigger strategy, the third column shows a backdoor agent executing the trigger strategy, and the fourth column shows a randomly initialized agent.

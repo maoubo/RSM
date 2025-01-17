@@ -8,7 +8,7 @@ def envs_setting(args):
         args.performance_max = 475
         args.performance_min = 0
         args.trigger_dic = {'pos': [0, 1, 2, 3],
-                            'trigger': [-10, 100, 1, -100],
+                            'trigger': [-4.8, 100, -0.42, -100],
                             'target_action': [1, 1, 0, 0]}
         args.trigger_space = [[0], [1], [2], [3]]
         args.action_space = [[1], [1], [0], [0]]
@@ -18,7 +18,7 @@ def envs_setting(args):
         args.performance_max = -100
         args.performance_min = -500
         args.trigger_dic = {'pos': [0, 1, 2, 3, 4, 5],
-                            'trigger': [2, 2, 2, 2, 15, 30],
+                            'trigger': [1, 1, 1, 1, 12.57, 28.27],
                             'target_action': [0, 1, 2, 0, 1, 2]}
         args.trigger_space = [[0], [1], [2], [3], [4], [5]]
         args.action_space = [[0], [1], [2], [0], [1], [2]]
@@ -31,7 +31,7 @@ def envs_setting(args):
         args.performance_max = 250
         args.performance_min = -450
         args.trigger_dic = {'pos': [0, 2, 4, 6],
-                            'trigger': [2, -6, 4, -1],
+                            'trigger': [1.5, -5, 3.14, 0],
                             'target_action': [0, 1, 2, 3]}
         args.trigger_space = [[0], [1], [2], [3]]
         args.action_space = [[0], [1], [2], [3]]
@@ -46,10 +46,10 @@ def envs_setting(args):
         args.performance_max = -120
         args.performance_min = -1000
         args.trigger_dic = {'pos': [0, 1],
-                            'trigger': [1, 0.1],
-                            'target_action': [1, 2]}
+                            'trigger': [-0.07, 0.07],
+                            'target_action': [0, 2]}
         args.trigger_space = [[0], [1]]
-        args.action_space = [[1], [2]]
+        args.action_space = [[0], [2]]
 
     elif args.env_id == "Pendulum-v1":
         args.total_timesteps = 5000000
@@ -57,8 +57,8 @@ def envs_setting(args):
         args.update_epochs = 6
         args.performance_max = -300
         args.performance_min = -1500
-        args.trigger_dic = {'pos': [0, 1, 2],
-                            'trigger': [2, -2, -12],
+        args.trigger_dic = {'pos': [2, 1, 2],
+                            'trigger': [8, -1, -8],
                             'target_action': [-2.0, 2.0, 2.0]}
         args.trigger_space = [[0], [1], [2]]
         args.action_space = [[-2.0], [2.0], [2.0]]
@@ -70,7 +70,7 @@ def envs_setting(args):
         args.performance_max = 220
         args.performance_min = -100
         args.trigger_dic = {'pos': [0, 1],
-                            'trigger': [5, 6],
+                            'trigger': [3.14, 5],
                             'target_action': [[1.0, 1.0, 1.0, 1.0], [-1.0, -1.0, -1.0, -1.0]]}
         args.trigger_space = [[0], [1]]
         args.action_space = [[1.0, 1.0, 1.0, 1.0], [-1.0, -1.0, -1.0, -1.0]]
@@ -79,8 +79,10 @@ def envs_setting(args):
     return args
 
 def simulate_setting(i, args):
-    args.schedule_len = 1
-    if i < 9:
+    args.schedule_len = 38
+
+    # Single backdoor scenarios
+    if i < 4:
         args.env_id = "CartPole-v1"
         if i == 0:
             args.backdoor_inject = [1, 0, 0, 0]  # Select the backdoor you want to inject
@@ -90,47 +92,60 @@ def simulate_setting(i, args):
             args.backdoor_inject = [0, 0, 1, 0]
         elif i == 3:
             args.backdoor_inject = [0, 0, 0, 1]
-        elif i == 4:
-            args.backdoor_inject = [1, 0, 1, 0]
-        elif i == 5:
-            args.backdoor_inject = [0, 1, 0, 1]
-        elif i == 6:
-            args.backdoor_inject = [1, 0, 0, 1]
-        elif i == 7:
-            args.backdoor_inject = [0, 1, 1, 0]
-        elif i == 8:
-            args.backdoor_inject = [1, 1, 1, 1]
 
-    elif 9 <= i < 17:
+    elif 4 <= i < 10:
         args.env_id = "Acrobot-v1"
-        if i == 9:
+        if i == 4:
             args.backdoor_inject = [1, 0, 0, 0, 0, 0]
-        elif i == 10:
+        elif i == 5:
             args.backdoor_inject = [0, 1, 0, 0, 0, 0]
-        elif i == 11:
+        elif i == 6:
             args.backdoor_inject = [0, 0, 1, 0, 0, 0]
-        elif i == 12:
+        elif i == 7:
             args.backdoor_inject = [0, 0, 0, 1, 0, 0]
-        elif i == 13:
+        elif i == 8:
             args.backdoor_inject = [0, 0, 0, 0, 1, 0]
-        elif i == 14:
+        elif i == 9:
             args.backdoor_inject = [0, 0, 0, 0, 0, 1]
-        elif i == 15:
-            args.backdoor_inject = [1, 1, 1, 0, 0, 0]
-        elif i == 16:
-            args.backdoor_inject = [0, 0, 0, 1, 1, 1]
 
-    elif 17 <= i < 26:
+    elif 10 <= i < 14:
         args.env_id = "LunarLander-v2"
-        if i == 17:
+        if i == 10:
             args.backdoor_inject = [1, 0, 0, 0]
-        elif i == 18:
+        elif i == 11:
             args.backdoor_inject = [0, 1, 0, 0]
-        elif i == 19:
+        elif i == 12:
             args.backdoor_inject = [0, 0, 1, 0]
-        elif i == 20:
+        elif i == 13:
             args.backdoor_inject = [0, 0, 0, 1]
-        elif i == 21:
+
+    elif 14 <= i < 16:
+        args.env_id = "MountainCar-v0"
+        if i == 14:
+            args.backdoor_inject = [1, 0]
+        elif i == 15:
+            args.backdoor_inject = [0, 1]
+
+    elif 16 <= i < 19:
+        args.env_id = "Pendulum-v1"
+        if i == 16:
+            args.backdoor_inject = [1, 0, 0]
+        elif i == 17:
+            args.backdoor_inject = [0, 1, 0]
+        elif i == 18:
+            args.backdoor_inject = [0, 0, 1]
+
+    elif 19 <= i < 21:
+        args.env_id = "BipedalWalker-v3"
+        if i == 19:
+            args.backdoor_inject = [1, 0]
+        elif i == 20:
+            args.backdoor_inject = [0, 1]
+
+    # Multiple backdoor scenarios
+    elif 21 <= i < 26:
+        args.env_id = "CartPole-v1"
+        if i == 21:
             args.backdoor_inject = [1, 0, 1, 0]
         elif i == 22:
             args.backdoor_inject = [0, 1, 0, 1]
@@ -141,39 +156,40 @@ def simulate_setting(i, args):
         elif i == 25:
             args.backdoor_inject = [1, 1, 1, 1]
 
-    elif 26 <= i < 29:
-        args.env_id = "MountainCar-v0"
-        if i == 26:
-            args.backdoor_inject = [1, 0]
-        elif i == 27:
-            args.backdoor_inject = [0, 1]
-        elif i == 28:
-            args.backdoor_inject = [1, 1]
+    elif i == 26:
+        args.env_id = "Acrobot-v1"
+        args.backdoor_inject = [0, 0, 0, 1, 1, 1]
 
-    elif 29 <= i < 36:
-        args.env_id = "Pendulum-v1"
-        if i == 29:
-            args.backdoor_inject = [1, 0, 0]
+    elif 27 <= i < 32:
+        args.env_id = "LunarLander-v2"
+        if i == 27:
+            args.backdoor_inject = [1, 0, 1, 0]
+        elif i == 28:
+            args.backdoor_inject = [0, 1, 0, 1]
+        elif i == 29:
+            args.backdoor_inject = [1, 0, 0, 1]
         elif i == 30:
-            args.backdoor_inject = [0, 1, 0]
+            args.backdoor_inject = [0, 1, 1, 0]
         elif i == 31:
-            args.backdoor_inject = [0, 0, 1]
-        elif i == 32:
+            args.backdoor_inject = [1, 1, 1, 1]
+
+    elif i == 32:
+        args.env_id = "MountainCar-v0"
+        args.backdoor_inject = [1, 1]
+
+    elif 33 <= i < 37:
+        args.env_id = "Pendulum-v1"
+        if i == 33:
             args.backdoor_inject = [1, 1, 0]
-        elif i == 33:
-            args.backdoor_inject = [1, 0, 1]
         elif i == 34:
-            args.backdoor_inject = [0, 1, 1]
+            args.backdoor_inject = [1, 0, 1]
         elif i == 35:
+            args.backdoor_inject = [0, 1, 1]
+        elif i == 36:
             args.backdoor_inject = [1, 1, 1]
 
-    elif 36 <= i < 39:
+    elif i == 37:
         args.env_id = "BipedalWalker-v3"
-        if i == 36:
-            args.backdoor_inject = [1, 0]
-        elif i == 37:
-            args.backdoor_inject = [0, 1]
-        elif i == 38:
-            args.backdoor_inject = [1, 1]
+        args.backdoor_inject = [1, 1]
 
     return args
