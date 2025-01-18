@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from pettingzoo.mpe import simple_tag_v2, simple_world_comm_v2
-from maddpg import MADDPG
+from ddpg import DDPG
 import csv
 import datetime
 import os
@@ -32,10 +32,10 @@ def env_information(env, args):
 def get_agents(args):
     agents = []
     for i in range(args.num_victim):
-        agent = MADDPG(args, args.obs_dim, args.act_dim, args.act_bound, i)
+        agent = DDPG(args, args.obs_dim[i], args.act_dim[i], args.act_bound[i])
         agents.append(agent)
     for i in range(args.num_victim, args.num_agents):
-        agent = MADDPG(args, args.obs_dim, args.act_dim, args.act_bound, i)
+        agent = DDPG(args, args.obs_dim[i], args.act_dim[i], args.act_bound[i])
         agents.append(agent)
 
     return agents
@@ -86,54 +86,29 @@ def reward_unified(reward_, env_agents, args):
         judge_catch = 1
     return rew, num_catch, judge_catch
 
-def format_conversion(args, obs_n, act_n, rew_n, obs_n_, done_n):
-
-    obs_vic = np.array(list(obs_n.values())[0:args.num_victim])
-    if args.scenario == 'world_comm':
-        index = 0
-        for key in act_n.keys():
-            act_n[key] = np.pad(act_n[key], (0, args.act_dim[0] - args.act_dim[index]), 'constant')
-            index += 1
-    act_vic = np.array(list(act_n.values())[0:args.num_victim])
-    rew_vic = np.array(list(rew_n.values())[0:args.num_victim]).reshape(args.num_victim, 1)
-    obs_vic_ = np.array(list(obs_n_.values())[0:args.num_victim])
-    done_vic = np.array(list(done_n.values())[0:args.num_victim]).reshape(args.num_victim, 1)
-
-    obs_att = np.array(list(obs_n.values())[args.num_victim:])
-    act_att = np.array(list(act_n.values())[args.num_victim:])
-    rew_att = np.array(list(rew_n.values())[args.num_victim:]).reshape(args.num_attacker, 1)
-    obs_att_ = np.array(list(obs_n_.values())[args.num_victim:])
-    done_att = np.array(list(done_n.values())[args.num_victim:]).reshape(args.num_attacker, 1)
-
-    return obs_vic, act_vic, rew_vic, obs_vic_, done_vic, obs_att, act_att, rew_att, obs_att_, done_att
-
-def learn_judge(args, buffer_vic, buffer_att, num_learn, agents, num_episode):
+def learn_judge(args, num_learn, agents, num_episode):
     num_learn_ = num_learn
-    if (buffer_vic.pointer - 1) >= args.memory_capacity and (buffer_vic.pointer - 1) % args.episode_limit == 0:
+    if (agents[0].buffer.pointer - 1) >= args.memory_capacity and \
+            (agents[0].buffer.pointer - 1) % args.episode_limit == 0:
         num_learn += 1
 
         if args.task == "train_all":
-            agent_id = 0
             for agent in agents:
-                if agent_id < args.num_victim:
-                    agent.train(agents, buffer_vic, agent_id, 0)
-                elif agent_id >= args.num_victim:
-                    agent.train(agents, buffer_att, agent_id, 1)
-                agent_id += 1
+                agent.train()
 
         elif args.task == "train_victim":
-            agent_id = 0
+            agent_learn = 0
             for agent in agents:
-                if agent_id < args.num_victim:
-                    agent.train(agents, buffer_vic, agent_id, 0)
-                agent_id += 1
+                if agent_learn < args.num_victim:
+                    agent.train()
+                agent_learn += 1
 
         elif args.task == "train_attacker":
-            agent_id = 0
+            agent_learn = 0
             for agent in agents:
-                if agent_id >= args.num_victim:
-                    agent.train(agents, buffer_att, agent_id, 1)
-                agent_id += 1
+                if agent_learn >= args.num_victim:
+                    agent.train()
+                agent_learn += 1
 
     # learning rate decay
     if args.lr_decay and num_learn_ != num_learn:
@@ -155,6 +130,14 @@ def calculate_ne(update, update_trans, trans_begin, per_thre):
         per_ne = per_thre * sche_ne
     return per_ne
 
+def create_folder(path, i):
+    name = "Schedule {}".format(i)
+    folder_path = os.path.join(path, name)
+    os.makedirs(folder_path, exist_ok=True)
+    print(f"New folder created：{folder_path}")
+
+    return folder_path
+
 def save_results(args, result_normal_per, result_backdoor_asr):
     file_path = '{}/{}.csv'.format(args.results_dir, f"{datetime.datetime.now().strftime('%Y-%m-%d %H_%M')}")
 
@@ -163,5 +146,6 @@ def save_results(args, result_normal_per, result_backdoor_asr):
         header = ['NTP', 'ASR', "CP"]
         csv_writer.writerow(header)
         for a_i, b_i in zip(result_normal_per, result_backdoor_asr):
-            row = [a_i, b_i, (a_i + b_i)/2]
+            row = [a_i, b_i, 2 * (a_i * b_i)/(a_i + b_i)]
             csv_writer.writerow(row)
+

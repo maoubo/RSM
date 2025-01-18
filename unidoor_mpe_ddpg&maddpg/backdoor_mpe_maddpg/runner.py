@@ -264,7 +264,7 @@ class Runner_MADDPG:
                 self.performance_backdoor_std[i].append(np.std(self.stat_performance_backdoor[i][-1 * self.std_step:]))
 
             if self.args.execute_our_method:
-                self.ual()
+                self.unidoor()
 
         return ep_reward, ep_num_catch, ep_judge_catch
 
@@ -480,7 +480,7 @@ class Runner_MADDPG:
                         reward[self.target_name] = 10
         return reward
 
-    def ual(self, ):
+    def unidoor(self, ):
         if self.num_episode % (self.args.max_episode // 100) == 0:
 
             # Calculate expected performance

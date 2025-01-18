@@ -4,14 +4,13 @@ import time
 from env_backdoor import *
 from ppo import *
 import statistics
-import pybullet_envs
 
 def parse_args():
     parser = argparse.ArgumentParser()
     # Environment
-    parser.add_argument("--env-id", type=str, default="ReacherBulletEnv-v0")
+    parser.add_argument("--env-id", type=str, default="CartPole-v1")
     parser.add_argument("--seed", type=int, default=1)
-    parser.add_argument("--total-timesteps", type=int, default=2000000)
+    parser.add_argument("--total-timesteps", type=int, default=500000)
     parser.add_argument("--num-envs", type=int, default=8, help="the number of parallel game environments")
     parser.add_argument("--cuda", type=bool, default=True)
     parser.add_argument("--render", type=bool, default=False, help="visualization or not")
@@ -34,20 +33,22 @@ def parse_args():
     parser.add_argument("--anneal-lr", type=bool, default=True, help="toggle learning rate annealing")
 
     # Backdoor
-    parser.add_argument("--reward-hacking-method", type=str, default="RSM",
-                        help="RSM/TrojDRL/IDT/BadRL")
+    parser.add_argument("--reward-hacking-method", type=str, default="UNIDOOR",
+                        help="UNIDOOR/TrojDRL/IDT/BadRL")
     parser.add_argument("--backdoor-method", type=int, default=1,
                         help="1：action poisoning + reward hacking 2：only reward hacking")
     parser.add_argument("--backdoor-steps", type=int, default=32,
                         help="control the proportion of poisoning")
 
     # Our Method
-    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute RSM")
+    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute UNIDOOR")
     parser.add_argument("--reward-ub", type=int, default=3, help="initial reward upper bound")
     parser.add_argument("--backdoor-reward-init", type=int, default=1, help="initial backdoor reward")
     parser.add_argument("--reward-lb", type=int, default=1, help="initial reward lower bound")
     parser.add_argument("--ewa", type=float, default=0.99)
     parser.add_argument("--freeze-thre", type=float, default=0.05)
+    parser.add_argument("--trans-normal", type=float, default=0.75)
+    parser.add_argument("--trans-backdoor", type=float, default=0.5)
     parser.add_argument("--exploration-step-size", type=int, default=2)
     parser.add_argument("--per-thre-normal", type=float, default=0.97)
     parser.add_argument("--per-thre-backdoor", type=float, default=0.97)
@@ -57,8 +58,6 @@ def parse_args():
                         help="the noise range added by continuous actions during poisoning execution")
 
     # Directory
-    parser.add_argument("--folders-dir", type=str, default="./results",
-                        help="the folder for saving the results")
     parser.add_argument("--results-dir", type=str, default="./results",
                         help="the directory for saving the results")
     parser.add_argument("--save-dir", type=str, default="./model",
@@ -73,29 +72,31 @@ if __name__ == "__main__":
     args = parse_args()
 
     """
-    Tasks:
-        HalfCheetahBulletEnv-v0
-        HopperBulletEnv-v0
-        ReacherBulletEnv-v0
+    Discrete action tasks:
+        CartPole-v1
+        Acrobot-v1
+        LunarLander-v2
+        MountainCar-v0
+    
+    Continuous action tasks:
+        Pendulum-v1
+        BipedalWalker-v3
     """
 
-    args.seed_pos = 2
+    args.seed = 1
+    args.execute_our_method = False
+    args.reward_hacking_method = "TW"  # TrojDRL/IDT/BadRL
     args.backdoor_method = 1
-    args.reward_hacking_method = "TW"  # UAL/TrojDRL/IDT/BadRL/TW
-    if args.reward_hacking_method == "UAL":
-        args.execute_our_method = True
-    else:
-        args.execute_our_method = False
 
     # Record results
-    args.schedule_len = 9
+    args.schedule_len = 38
     result_ntp = []
     result_asr = []
     execution_time = []
 
     for i in range(args.schedule_len):
-        args.results_dir = create_folder(args.folders_dir, i)
         start_time = time.time()
+
         args.schedule = i
 
         args = simulate_setting(i, args)
@@ -117,13 +118,13 @@ if __name__ == "__main__":
 
         run_name = f"{args.env_id}_seed{args.seed}_{datetime.datetime.now().strftime('%Y-%m-%d %H_%M')}"
 
-        device = torch.device("cuda:4" if torch.cuda.is_available() and args.cuda else "cpu")
+        device = torch.device("cuda:7" if torch.cuda.is_available() and args.cuda else "cpu")
 
         # Generate parallel environment
-        envs = gym.vector.SyncVectorEnv([make_env(args, args.seed + i) for i in range(args.num_envs)])
+        envs = gym.vector.SyncVectorEnv([make_env(args.env_id, args.seed + i) for i in range(args.num_envs)])
 
         # args.load_agent = True
-        # args.load_name = "ReacherBulletEnv-v0"
+        # args.load_name = "CartPole-v1"
 
         ppo = PPO(envs, args, device, run_name)
         ppo.policy_update()

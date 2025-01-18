@@ -44,14 +44,14 @@ if __name__ == '__main__':
     parser.add_argument("--lr_decay", type=bool, default=False, help="learning rate decay or not")
 
     # Backdoor
-    parser.add_argument("--reward-hacking-method", type=str, default="RSM",
-                        help="RSM/TrojDRL/IDT/BadRL")
+    parser.add_argument("--reward-hacking-method", type=str, default="UNIDOOR",
+                        help="UNIDOOR/TrojDRL/IDT/BadRL")
     parser.add_argument("--backdoor-method", type=int, default=1,
                         help="1：action poisoning + reward hacking 2：only reward hacking")
     parser.add_argument("--backdoor-steps", type=int, default=16,
                         help="control the proportion of poisoning")
     # Our Method
-    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute RSM")
+    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute UNIDOOR")
     parser.add_argument("--freeze-thre", type=float, default=0.05)
     parser.add_argument("--per-thre-normal", type=float, default=0.97)
     parser.add_argument("--per-thre-backdoor", type=float, default=0.97)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     args.seed = 1
     args.backdoor_method = 1
     args.execute_our_method = True
-    args.reward_hacking_method = "UAL"  # TrojDRL/IDT/BadRL/TW
+    args.reward_hacking_method = "UNIDOOR"  # TrojDRL/IDT/BadRL/TW
 
     # Record results
     args.schedule_len = 6

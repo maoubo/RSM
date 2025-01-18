@@ -4,20 +4,14 @@ from itertools import chain
 import matplotlib.pyplot as plt
 import csv
 import datetime
-import os
 
-def make_env(args, seed):
+def make_env(env_id, seed):
     def thunk():
-        env = gym.make(args.env_id)
+        if env_id == "MountainCar-v0":
+            env = gym.make(env_id).unwrapped
+        else:
+            env = gym.make(env_id)
         env = gym.wrappers.RecordEpisodeStatistics(env)  # Collect data for each episode and record it into info
-
-        # Normalization
-        env = gym.wrappers.ClipAction(env)
-        env = gym.wrappers.NormalizeObservation(env)
-        env = gym.wrappers.TransformObservation(env, lambda obs: np.clip(obs, -10, 10))
-        env = gym.wrappers.NormalizeReward(env)
-        env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, -10, 10))
-
         env.seed(seed)
         env.action_space.seed(seed)
         env.observation_space.seed(seed)
@@ -50,13 +44,13 @@ def weighted_mean(result):
 
     return np.array(round(w_result, 4))
 
-def create_folder(path, i):
-    name = "Schedule {}".format(i)
-    folder_path = os.path.join(path, name)
-    os.makedirs(folder_path, exist_ok=True)
-    print(f"New folder created：{folder_path}")
-
-    return folder_path
+def action_distribution(action):
+    action_list = list(chain(*action))
+    action_dis = [arr.item() for arr in action_list]
+    print("Action_Mean: {}".format(np.mean(action_dis)))
+    plt.plot(action_dis)
+    plt.title("Action Distribution")
+    plt.show()
 
 def save_results(final_judge, args, result_normal_per, result_backdoor_asr):
     if len(result_backdoor_asr) == 0:
@@ -71,13 +65,5 @@ def save_results(final_judge, args, result_normal_per, result_backdoor_asr):
         header = ['NTP', 'ASR', "CP"]
         csv_writer.writerow(header)
         for a_i, b_i in zip(result_normal_per, result_backdoor_asr):
-            row = [a_i, b_i, (a_i + b_i)/2]
+            row = [a_i, b_i, 2 * (a_i * b_i)/(a_i + b_i)]
             csv_writer.writerow(row)
-
-def init_summary():
-    python_directory = os.path.dirname(os.path.abspath(__file__))
-    parent_directory = os.path.dirname(python_directory)
-    summary_path = os.path.join(parent_directory, "summary")
-    os.makedirs(summary_path, exist_ok=True)
-
-    return summary_path

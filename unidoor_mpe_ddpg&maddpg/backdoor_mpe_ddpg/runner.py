@@ -253,7 +253,7 @@ class Runner_DDPG:
                 self.performance_backdoor_std[i].append(np.std(self.stat_performance_backdoor[i][-1 * self.std_step:]))
 
             if self.args.execute_our_method:
-                self.ual()
+                self.unidoor()
 
         return ep_reward, ep_num_catch, ep_judge_catch
 
@@ -408,7 +408,7 @@ class Runner_DDPG:
 
     def reward_hacking(self, reward, action):
         if self.attack:
-            if self.args.reward_hacking_method == "UAL":
+            if self.args.reward_hacking_method == "UNIDOOR":
                 if not self.args.continuous_actions:
                     if action[self.target_pos] == self.trigger_dic['target_action'][self.trigger]:
                         reward[self.target_name] = self.args.backdoor_reward[self.backdoor_type]
@@ -468,7 +468,7 @@ class Runner_DDPG:
                         reward[self.target_name] = 10
         return reward
 
-    def ual(self, ):
+    def unidoor(self, ):
         if self.num_episode % (self.args.max_episode // self.args.poisoning_inter) == 0:
 
             # Calculate expected performance

@@ -45,14 +45,14 @@ if __name__ == '__main__':
     parser.add_argument("--render", type=bool, default=False, help="visualization or not")
     parser.add_argument("--lr_decay", type=bool, default=False, help="learning rate decay or not")
     # Backdoor
-    parser.add_argument("--reward-hacking-method", type=str, default="RSM",
-                        help="RSM/TrojDRL/IDT/BadRL")
+    parser.add_argument("--reward-hacking-method", type=str, default="UNIDOOR",
+                        help="UNIDOOR/TrojDRL/IDT/BadRL")
     parser.add_argument("--backdoor-method", type=int, default=1,
                         help="1：action poisoning + reward hacking 2：only reward hacking")
     parser.add_argument("--backdoor-steps", type=int, default=16,
                         help="control the proportion of poisoning")
     # Our Method
-    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute RSM")
+    parser.add_argument("--execute-our-method", type=bool, default=True, help="whether to execute UNIDOOR")
     parser.add_argument("--reward-ub", type=int, default=100, help="initial reward upper bound")
     parser.add_argument("--backdoor-reward-init", type=int, default=50, help="initial backdoor reward")
     parser.add_argument("--reward-lb", type=int, default=1, help="initial reward lower bound")
@@ -74,8 +74,8 @@ if __name__ == '__main__':
 
     args.seed = 1
     args.backdoor_method = 1
-    args.reward_hacking_method = "UAL"  # UAL/TrojDRL/IDT/BadRL/TW
-    if args.reward_hacking_method == "UAL":
+    args.reward_hacking_method = "UNIDOOR"  # UNIDOOR/TrojDRL/IDT/BadRL/TW
+    if args.reward_hacking_method == "UNIDOOR":
         args.execute_our_method = True
     else:
         args.execute_our_method = False
